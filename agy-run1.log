@@ -1,0 +1,63 @@
+﻿agy : warning: --mode auto is not available for this account; continuing in the default mode.
+At line:1 char:341
++ ... avtomaktab; agy -p "Read BRIEF.md in this directory and build the who ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: --mode...e default mode.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+root agent idle; waiting up to 30m0s for 1 background task(s)
+I have started `npm run build` to verify the production build and TypeScript types; waiting for it to finish.
+Testing the JSON question import script (`npm run import:questions -- docs/sample-import.json`) and re-seeding the database; waiting for completion.
+Running the full test suite (`npm test`) and production build (`npm run build`); waiting for completion.
+The **Avtomaktab** learning and exam platform has been built in this directory following [BRIEF.md](file:///C:/Users/miuceo/Desktop/avtomaktab/BRIEF.md). Architectural decisions are documented in [DECISIONS.md](file:///C:/Users/miuceo/Desktop/avtomaktab/DECISIONS.md), the Uzbek installation & deployment guide is in [README.md](file:///C:/Users/miuceo/Desktop/avtomaktab/README.md), and the JSON import specification is in [import-format.md](file:///C:/Users/miuceo/Desktop/avtomaktab/docs/import-format.md).
+
+### What Was Built
+
+1. **Database & Seed ([schema.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/db/schema.ts), [migrate.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/db/migrate.ts), [seed.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/db/seed.ts), [seed-assets.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/db/seed-assets.ts)):**
+   - SQLite via `@libsql/client` + Drizzle ORM (`DATABASE_URL` defaulting to `file:./data/app.db`, optional `DATABASE_AUTH_TOKEN` for Turso).
+   - Seed script creates 1 admin (`admin` / `admin123`), 1 teacher (`teacher` / `teacher123`), 1 group (`BC-101 guruh`), 2 students (`student1`, `student2` / `student123`), 8 topics, 40 realistic Uzbekistan YHQ questions with Russian translations and explanations, 2 tickets of 20 questions each, 5 textbook chapters, 30 generated SVG road signs (`public/seed/signs/*.svg`), 4 SVG traffic diagrams (`public/seed/diagrams/*.svg`), 3 videos, and default center settings.
+
+2. **Authentication, Security & Preferences ([auth.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/auth.ts), [rate-limit.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/rate-limit.ts), [middleware.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/middleware.ts)):**
+   - Custom `bcryptjs` password hashing and `sessions` table backed by `httpOnly` cookies.
+   - In-memory login rate limiting ([`checkLoginRateLimit`](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/rate-limit.ts#L11-L26)).
+   - Role-based middleware and server-side [`requireRole`](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/auth.ts#L98-L107) checks + `zod` input validation on all API routes.
+   - Bilingual UI & content in Uzbek Latin (default) and Russian ([uz.json](file:///C:/Users/miuceo/Desktop/avtomaktab/messages/uz.json), [ru.json](file:///C:/Users/miuceo/Desktop/avtomaktab/messages/ru.json), [i18n.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/i18n.ts)) with automatic fallback to Uzbek when `*_ru` is empty, plus Light/Dark/System theme toggle in [Header.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/components/Header.tsx).
+
+3. **Student Portal ([src/app/student](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/student/page.tsx)):**
+   - **Dashboard:** Solved tickets, last exam status, active mistakes count, weakest topics, and recent attempts.
+   - **Ticket Practice ([PracticeRunner.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/components/PracticeRunner.tsx)):** `F1`–`F5` and `1`–`5` keyboard shortcuts, instant correct/wrong highlight, explanation, and question navigator.
+   - **Topic Practice & Mistakes:** Practice by topic or practice questions answered wrong last time until answered correctly.
+   - **GAI Exam Simulator ([ExamRunnerClient.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/student/exam/run/ExamRunnerClient.tsx), [exam-logic.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/exam-logic.ts)):** Distraction-free 1366×768-friendly exam screen with countdown timer, answered-state navigator, `is_correct` stripped on the server ([`sanitizeQuestionForClientExam`](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/exam-logic.ts#L168-L198)), immediate fail termination when `wrong > max_wrong` or on timeout, and full question-by-question breakdown on [result/[attemptId]/page.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/student/exam/result/%5BattemptId%5D/page.tsx).
+   - **Knowledge Base & Road Signs Catalog:** Markdown chapters with offline-aware YouTube embeds ([YouTubeEmbed.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/components/YouTubeEmbed.tsx) displaying `"Video uchun internet kerak"` when offline), `"Mavzu bo'yicha test"` button, and searchable/grouped road signs catalog ([SignsCatalogClient.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/student/signs/SignsCatalogClient.tsx)).
+
+4. **Teacher Portal ([TeacherGroupsClient.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/teacher/TeacherGroupsClient.tsx), [students/[id]/page.tsx](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/teacher/students/%5Bid%5D/page.tsx)):**
+   - Groups CRUD, one-click student account creation with generated login + password (shown once with a printable credentials table), password reset, group results table, and student detail page with exam history and topic error rates.
+
+5. **Admin Portal ([src/app/admin](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/admin/page.tsx)):**
+   - Full CRUD with image uploads ([storage.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/lib/storage.ts)) for questions + answers, topics, tickets (auto-generation of 20-question tickets + manual editing), chapters, road signs, videos, users, and center/exam settings.
+   - Translation review queue ("Tarjimani tekshirish") at [/admin/translations](file:///C:/Users/miuceo/Desktop/avtomaktab/src/app/admin/translations/page.tsx) and JSON question import CLI/endpoint ([import-questions.ts](file:///C:/Users/miuceo/Desktop/avtomaktab/src/scripts/import-questions.ts)).
+
+---
+
+### How to Run
+
+```powershell
+# 1. Run database migrations and seed sample data
+npm run db:migrate
+npm run db:seed
+
+# 2. Run unit & integration tests (Vitest)
+npm test
+
+# 3. Start in development mode (binds 0.0.0.0:3000)
+npm run dev
+
+# 4. Or build and run in production mode for LAN (binds 0.0.0.0:3000)
+npm run build
+npm start
+```
+
+**Default Seed Accounts:**
+- **Admin:** `admin` / `admin123`
+- **Teacher:** `teacher` / `teacher123`
+- **Students:** `student1` / `student123`, `student2` / `student123`

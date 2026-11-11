@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 320" width="600" height="320">
+  <rect width="600" height="320" fill="#e5e7eb"/>
+  <rect x="0" y="100" width="600" height="120" fill="#374151"/>
+  <rect x="240" y="0" width="120" height="320" fill="#374151"/>
+  <line x1="300" y1="0" x2="300" y2="90" stroke="#ffffff" stroke-width="3" stroke-dasharray="12,10"/>
+  <line x1="300" y1="230" x2="300" y2="320" stroke="#ffffff" stroke-width="3" stroke-dasharray="12,10"/>
+  <!-- Bottom car turning left -->
+  <rect x="308" y="236" width="36" height="60" rx="8" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+  <path d="M 326 230 Q 326 135 200 135" fill="none" stroke="#93c5fd" stroke-width="4" stroke-dasharray="7,5"/>
+  <!-- Top oncoming car going straight -->
+  <rect x="256" y="24" width="36" height="60" rx="8" fill="#f97316" stroke="#ffffff" stroke-width="2"/>
+  <path d="M 274 90 L 274 280" fill="none" stroke="#fdba74" stroke-width="4" stroke-dasharray="7,5"/>
+</svg>

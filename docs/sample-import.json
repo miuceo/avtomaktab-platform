@@ -1,0 +1,32 @@
+{
+  "questions": [
+    {
+      "topic_name_uz": "Umumiy qoidalar va haydovchi majburiyatlari",
+      "topic_name_ru": "Общие положения и обязанности водителей",
+      "text_uz": "Sutkaning qorong'i vaqtida majburiy to'xtaganda qaysi chiroq yoqilishi shart?",
+      "text_ru": "Какой сигнал должен быть включен при вынужденной остановке в темное время суток?",
+      "image_path": null,
+      "explanation_uz": "Majburiy to'xtaganda avariya yorug'lik ishorasi yoqilishi va avariya sababli to'xtash belgisi o'rnatilishi shart.",
+      "explanation_ru": "При вынужденной остановке должна быть включена аварийная сигнализация и выставлен знак аварийной остановки.",
+      "ru_reviewed": true,
+      "status": "published",
+      "answers": [
+        {
+          "text_uz": "Avariya yorug'lik ishorasi",
+          "text_ru": "Аварийная световая сигнализация",
+          "is_correct": true
+        },
+        {
+          "text_uz": "Faqat salon chirog'i",
+          "text_ru": "Только освещение салона",
+          "is_correct": false
+        },
+        {
+          "text_uz": "Orqaga harakatlanish chirog'i",
+          "text_ru": "Фонарь заднего хода",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}
