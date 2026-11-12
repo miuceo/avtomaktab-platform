@@ -2,6 +2,8 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 title Avtomaktab server
+rem Server already running: just open the browser instead of failing on a busy port.
+netstat -ano | findstr /r /c:":3000 .*LISTENING" >nul && (echo Server allaqachon ishlab turibdi - brauzer ochilmoqda.& start http://localhost:3000& timeout /t 3 >nul& exit /b)
 echo Avtomaktab serveri ishga tushmoqda... Bu oynani YOPMANG.
 echo Toxtatish uchun shu oynani yoping.
 if not exist node_modules call npm install
