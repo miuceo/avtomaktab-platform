@@ -45,3 +45,6 @@ agy-*.log
 
 # database backups
 /zaxira/
+
+# marker: desktop icon already created
+/.yorliq

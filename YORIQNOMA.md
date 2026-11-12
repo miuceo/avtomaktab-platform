@@ -43,7 +43,8 @@ Men dasturchi emasman, hamma ishni o'zing qil va menga oddiy tilda tushuntir.
 3. Node.js va Git o'rnatilganini tekshir. Agar yo'q bo'lsa, winget orqali o'rnat (Node.js LTS va Git).
 4. npm install, keyin npm run build buyruqlarini ishga tushir. Xato chiqsa, o'zing tuzat.
 5. Kodning o'zini o'zgartirma. data papkasini hech qachon o'chirma.
-6. Oxirida menga nima qilganingni va serverni qanday ishga tushirishni qisqa tushuntir.
+6. yorliq-yaratish.bat faylini ishga tushir — ish stolida "Avtomaktab" yorlig'i paydo bo'lsin.
+7. Oxirida menga nima qilganingni va serverni qanday ishga tushirishni qisqa tushuntir.
 ```
 
 4. Antigravity buyruqlarni bajarishga ruxsat so'rasa — **"Accept" / "Allow" / "Run"** bosing.
@@ -53,21 +54,26 @@ Men dasturchi emasman, hamma ishni o'zing qil va menga oddiy tilda tushuntir.
 
 ---
 
-## 3-qadam. Serverni ishga tushirish
+## 3-qadam. Serverni birinchi marta ishga tushirish
 
 1. `avtomaktab` papkasini oching (Windows Explorer'da).
 2. **`1-ishga-tushirish.bat`** fayliga ikki marta bosing. Qora oyna ochiladi.
-3. Oynada `Ready` yoki `started server` degan yozuv chiqguncha kuting.
-4. **Windows "Brandmauer / Firewall" oynasi chiqsa** — ikkala katakchani belgilang ("Private" va "Public") va **"Allow access" (Ruxsat berish)** bosing. Shusiz boshqa kompyuterlar kira olmaydi.
+3. Birinchi ishga tushirishda u **ish stolida (Desktop) "Avtomaktab" yorlig'ini** o'zi yaratadi. Bundan keyin papkaga kirish shart emas — har doim shu yorliqni ikki marta bosasiz.
+4. Taxminan 10–15 soniyadan keyin **brauzer o'zi ochiladi** va platforma ko'rinadi.
+5. **Windows "Brandmauer / Firewall" oynasi chiqsa** — ikkala katakchani belgilang ("Private" va "Public") va **"Allow access" (Ruxsat berish)** bosing. Shusiz boshqa kompyuterlar kira olmaydi.
 
 > **Qora oynani YOPMANG** — u yopilsa platforma to'xtaydi. Oynani shunchaki pastga yig'ib qo'ying (minimize).
+>
+> Brauzer juda erta ochilib "sahifa topilmadi" desa — bir necha soniya kutib, sahifani yangilang (F5).
+>
+> Yorliq o'chib ketsa — papkadagi **`yorliq-yaratish.bat`** ni ikki marta bosing, yorliq qaytadan paydo bo'ladi.
 
 ---
 
 ## 4-qadam. Birinchi administratorni yaratish (bir marta)
 
-1. Server kompyuterning o'zida Chrome'ni oching va manzil qatoriga yozing: **`localhost:3000`**
-2. "Tizimni sozlash" sahifasi chiqadi. Ismingiz, login va parol (kamida 8 belgi) kiriting.
+1. Ochilgan brauzerda (yoki Chrome'da **`localhost:3000`** manzilini yozib) "Tizimni sozlash" sahifasi chiqadi.
+2. Ismingiz, login va parol (kamida 8 belgi) kiriting.
 3. **Login va parolni qog'ozga yozib, xavfsiz joyda saqlang.** Bu bosh administrator — u yo'qolsa tiklash qiyin.
 4. "Administratorni yaratish" bosing — admin panel ochiladi.
 
@@ -109,7 +115,7 @@ O'quvchi kirgandan **3 soat o'tgach tizimdan avtomatik chiqariladi** — qayta l
 
 | Qachon | Nima qilish kerak |
 |---|---|
-| Ertalab | Server kompyuterni yoqing → `1-ishga-tushirish.bat` ni ikki marta bosing |
+| Ertalab | Server kompyuterni yoqing → ish stolidagi **"Avtomaktab"** yorlig'ini ikki marta bosing → brauzer o'zi ochiladi |
 | Kechqurun | Qora oynani yoping → kompyuterni o'chirsangiz bo'ladi |
 | Haftada bir marta | `zaxira-nusxa.bat` ni ikki marta bosing (pastga qarang) |
 
@@ -129,7 +135,7 @@ O'quvchi kirgandan **3 soat o'tgach tizimdan avtomatik chiqariladi** — qayta l
 
 1. Server qora oynasini yoping.
 2. **`yangilash.bat`** ni ikki marta bosing — avval o'zi zaxira oladi, keyin yangi kodni yuklab, tayyorlaydi (internet kerak).
-3. Tugagach, `1-ishga-tushirish.bat` ni oching.
+3. Tugagach, ish stolidagi **"Avtomaktab"** yorlig'ini oching.
 
 Ma'lumotlaringiz (savollar, o'quvchilar) yangilashda **o'chmaydi**.
 
