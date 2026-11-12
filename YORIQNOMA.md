@@ -99,9 +99,9 @@ Tartib muhim:
 1. **O'quv jarayoni → Foydalanuvchilar** → ustozning familiyasi, ismi va sharifini yozib, "Qo'shish" bosing (rol: O'qituvchi). Login va parol **avtomatik** yaratiladi va bir marta ko'rsatiladi — yozib oling yoki chop eting. Parol unutilsa, ro'yxatdagi kalit belgisini bosib yangisini yaratasiz.
 2. **O'quv jarayoni → Guruhlar** → "Yangi guruh yaratish" → nom (masalan, `101-guruh`) va ustozni tanlang.
 3. Guruhda **"O'quvchilarni ommaviy qo'shish"** → o'quvchilar ism-familiyasini **har qatorga bittadan** yozing → tizim har biriga login va parol yaratadi → **"Chop etish"** bosib, qog'ozga chiqaring va o'quvchilarga tarqating. Parollar faqat bir marta ko'rsatiladi!
-4. **Mavzular** → mavzular qo'shing (masalan, "Yo'l belgilari", "Chorrahalar").
-5. **Savollar** → savollar qo'shing (har birida bitta to'g'ri javob). Ustozlar ham savol qo'sha oladi.
-6. **Testlar** (ustoz yoki admin) → "Yangi test yaratish" → nom, vaqt (daqiqa), savollarni belgilang.
+4. **Savollar bazasi → Mavzular** → mavzular qo'shing (masalan, "Yo'l belgilari", "Chorrahalar").
+5. **Savollar bazasi → Savollar** → savollar qo'shing (har birida bitta to'g'ri javob). Ustozlar ham savol qo'sha oladi.
+6. **O'quv jarayoni → Testlar** (ustoz yoki admin; ustoz menyusida shunchaki **Testlar**) → "Yangi test yaratish" → nom, vaqt (daqiqa), savollarni belgilang.
 
 **Testni berish:**
 - **Umumiy test** — ustoz guruhni tanlab "Boshlash" bosadi. Hammada bir vaqtda tugaydi. Kech kirgan o'quvchiga faqat qolgan vaqt beriladi. Kirmagan o'quvchi "Kelmadi" deb belgilanadi.
