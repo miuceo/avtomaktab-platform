@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
+import { generatePassword, generateUniqueLogin } from "@/lib/credentials";
 import { setAppSetting } from "@/lib/settings";
 import { chunkQuestionsIntoTickets } from "@/lib/exam-logic";
 import { QuestionSchema } from "@/lib/question-schema";
@@ -74,8 +75,10 @@ const VideoSchema = z.object({
 
 const UserSchema = z.object({
   id: z.number().int().positive().optional(),
-  login: z.string().min(2).max(80),
+  // New users get a login generated from the name and a random password.
+  login: z.string().min(2).max(80).optional(),
   password: z.string().optional(),
+  resetPassword: z.boolean().optional(),
   full_name: z.string().min(2).max(120),
   role: z.enum(["admin", "teacher", "student"]),
 });
@@ -355,11 +358,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Oxirgi administratorni o'zgartirib bo'lmaydi" }, { status: 400 });
           }
         }
+        if (data.resetPassword) {
+          const password = generatePassword();
+          await db.update(users).set({ password_hash: await hashPassword(password) }).where(eq(users.id, data.id));
+          return NextResponse.json({ ok: true, password });
+        }
         const updateFields: Record<string, unknown> = {
-          login: data.login.trim(),
           full_name: data.full_name.trim(),
           role: data.role,
         };
+        if (data.login?.trim()) updateFields.login = data.login.trim();
         if (data.password && data.password.trim().length > 0) {
           if (data.password.trim().length < 8) {
             return NextResponse.json({ error: "Parol kamida 8 belgidan iborat bo'lsin" }, { status: 400 });
@@ -368,17 +376,20 @@ export async function POST(req: NextRequest) {
         }
         await db.update(users).set(updateFields).where(eq(users.id, data.id));
       } else {
-        if (!data.password || data.password.trim().length < 8) {
-          return NextResponse.json({ error: "Parol kamida 8 belgidan iborat bo'lsin" }, { status: 400 });
-        }
-        const passwordHash = await hashPassword(data.password.trim());
+        const fullName = data.full_name.trim().replace(/s+/g, " ");
+        const taken = new Set(
+          (await db.select({ login: users.login }).from(users)).map((u) => u.login.toLowerCase())
+        );
+        const login = generateUniqueLogin(fullName, taken);
+        const password = generatePassword();
         await db.insert(users).values({
-          login: data.login.trim(),
-          password_hash: passwordHash,
-          full_name: data.full_name.trim(),
+          login,
+          password_hash: await hashPassword(password),
+          full_name: fullName,
           role: data.role,
           created_at: Date.now(),
         });
+        return NextResponse.json({ ok: true, login, password });
       }
       return NextResponse.json({ ok: true });
     }

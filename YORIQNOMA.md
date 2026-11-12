@@ -92,10 +92,12 @@ Men dasturchi emasman, hamma ishni o'zing qil va menga oddiy tilda tushuntir.
 
 ## 6-qadam. Platformani to'ldirish (admin)
 
+Menyu bo'limlarga ajratilgan: **O'quv jarayoni** (guruhlar, foydalanuvchilar, testlar), **Savollar bazasi** (savollar, mavzular, biletlar, tarjima), **Bilim bo'limi** (boblar, belgilar, videolar) va **Sozlamalar**. Bo'lim nomini bossangiz, ichidagi sahifalar ochiladi.
+
 Tartib muhim:
 
-1. **Foydalanuvchilar** → ustozlarni qo'shing (rol: O'qituvchi). Har bir ustozga login-parol berasiz.
-2. **Guruhlar** → "Yangi guruh yaratish" → nom (masalan, `101-guruh`) va ustozni tanlang.
+1. **O'quv jarayoni → Foydalanuvchilar** → ustozning familiyasi, ismi va sharifini yozib, "Qo'shish" bosing (rol: O'qituvchi). Login va parol **avtomatik** yaratiladi va bir marta ko'rsatiladi — yozib oling yoki chop eting. Parol unutilsa, ro'yxatdagi kalit belgisini bosib yangisini yaratasiz.
+2. **O'quv jarayoni → Guruhlar** → "Yangi guruh yaratish" → nom (masalan, `101-guruh`) va ustozni tanlang.
 3. Guruhda **"O'quvchilarni ommaviy qo'shish"** → o'quvchilar ism-familiyasini **har qatorga bittadan** yozing → tizim har biriga login va parol yaratadi → **"Chop etish"** bosib, qog'ozga chiqaring va o'quvchilarga tarqating. Parollar faqat bir marta ko'rsatiladi!
 4. **Mavzular** → mavzular qo'shing (masalan, "Yo'l belgilari", "Chorrahalar").
 5. **Savollar** → savollar qo'shing (har birida bitta to'g'ri javob). Ustozlar ham savol qo'sha oladi.

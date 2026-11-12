@@ -42,3 +42,11 @@
     color: #000000 !important;
   }
 }
+
+/* Scrollable rows (header nav on small screens) without a visible scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

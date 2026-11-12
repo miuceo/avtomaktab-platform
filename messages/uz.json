@@ -65,7 +65,11 @@
     "adminVideos": "Videolar",
     "adminUsers": "Foydalanuvchilar",
     "adminTranslations": "Tarjimani tekshirish",
-    "adminSettings": "Sozlamalar"
+    "adminSettings": "Sozlamalar",
+    "groupLearning": "O'quv jarayoni",
+    "groupQuestions": "Savollar bazasi",
+    "groupKnowledge": "Bilim bo'limi",
+    "groupPractice": "Mashq"
   },
   "student": {
     "ticketsSolved": "Yechilgan biletlar",
@@ -204,5 +208,23 @@
     "shareHint": "Shu havolani o'qituvchi va o'quvchilarga bering: markazdagi Wi-Fi'ga ulangan istalgan kompyuter yoki telefondan ochiladi. Kirish login-parol bilan.",
     "shareCopy": "Nusxalash",
     "shareNone": "Tarmoq topilmadi: serverni Wi-Fi yoki LAN'ga ulang."
+  },
+  "users": {
+    "hint": "Familiya va ismni yozing: login va parol avtomatik yaratiladi.",
+    "surname": "Familiya",
+    "name": "Ism",
+    "patronymic": "Sharif (otasining ismi)",
+    "fullName": "F.I.Sh",
+    "role": "Rol",
+    "autoHint": "Login familiya va ismdan yasaladi (masalan, aliyevjasur). Band bo'lsa, oxiriga raqam qo'shiladi. Parol avtomatik yaratiladi.",
+    "issuedTitle": "Login va parol yaratildi",
+    "issuedWarning": "Parol faqat hozir ko'rsatiladi! Yozib oling yoki chop eting.",
+    "print": "Chop etish",
+    "newPassword": "Yangi parol",
+    "keepPassword": "Bo'sh qoldirilsa o'zgarmaydi",
+    "resetPassword": "Yangi parol yaratish",
+    "resetConfirm": "{name} uchun yangi parol yaratilsinmi? Eski parol ishlamay qoladi.",
+    "deleteConfirm": "{name} o'chirilsinmi?",
+    "error": "Xatolik yuz berdi"
   }
 }
