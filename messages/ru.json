@@ -69,7 +69,8 @@
     "groupLearning": "Учебный процесс",
     "groupQuestions": "База вопросов",
     "groupKnowledge": "База знаний",
-    "groupPractice": "Практика"
+    "groupPractice": "Практика",
+    "myGroups": "Мои группы"
   },
   "student": {
     "ticketsSolved": "Решено билетов",
@@ -226,5 +227,22 @@
     "resetConfirm": "Создать новый пароль для {name}? Старый перестанет работать.",
     "deleteConfirm": "Удалить {name}?",
     "error": "Произошла ошибка"
+  },
+  "teacherHome": {
+    "title": "Панель преподавателя",
+    "greeting": "Добро пожаловать, {name}",
+    "groups": "Мои группы",
+    "students": "Ученики",
+    "tests": "Мои тесты",
+    "active": "Активные тесты",
+    "newTest": "Новый тест",
+    "addStudents": "Добавить учеников",
+    "activeTitle": "Активные тесты сейчас",
+    "liveNow": "{n} в эфире",
+    "allTests": "Все тесты",
+    "noActive": "Сейчас нет активных тестов. Запустите или откройте тест для группы в разделе «Тесты».",
+    "kindLive": "Общий (живой)",
+    "kindOpen": "Свободный",
+    "minutesLeft": "осталось {n} мин"
   }
 }

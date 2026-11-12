@@ -84,7 +84,7 @@ export default async function TeacherStudentDetailPage({
     <div className="space-y-6 animate-enter">
       <div className="flex items-center gap-3">
         <Link
-          href="/teacher"
+          href="/teacher/groups"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-700"
         >
           <ArrowLeft className="w-4 h-4" />

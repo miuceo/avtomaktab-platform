@@ -69,7 +69,8 @@
     "groupLearning": "O'quv jarayoni",
     "groupQuestions": "Savollar bazasi",
     "groupKnowledge": "Bilim bo'limi",
-    "groupPractice": "Mashq"
+    "groupPractice": "Mashq",
+    "myGroups": "Guruhlarim"
   },
   "student": {
     "ticketsSolved": "Yechilgan biletlar",
@@ -226,5 +227,22 @@
     "resetConfirm": "{name} uchun yangi parol yaratilsinmi? Eski parol ishlamay qoladi.",
     "deleteConfirm": "{name} o'chirilsinmi?",
     "error": "Xatolik yuz berdi"
+  },
+  "teacherHome": {
+    "title": "O'qituvchi paneli",
+    "greeting": "Xush kelibsiz, {name}",
+    "groups": "Guruhlarim",
+    "students": "O'quvchilar",
+    "tests": "Testlarim",
+    "active": "Faol testlar",
+    "newTest": "Yangi test",
+    "addStudents": "O'quvchi qo'shish",
+    "activeTitle": "Hozir faol testlar",
+    "liveNow": "{n} ta jonli",
+    "allTests": "Barcha testlar",
+    "noActive": "Hozir faol test yo'q. Testlar bo'limida guruhga test boshlang yoki oching.",
+    "kindLive": "Umumiy (jonli)",
+    "kindOpen": "Ixtiyoriy",
+    "minutesLeft": "{n} daqiqa qoldi"
   }
 }

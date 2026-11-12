@@ -149,7 +149,8 @@ export function Header({ user, lang, initialTheme, centerName, logoPath }: Heade
     );
   } else if (user?.role === "teacher") {
     navItems.push(
-      { href: "/teacher", label: t(lang, "nav.groups"), icon: <Users className="w-4 h-4" /> },
+      { href: "/teacher", label: t(lang, "nav.dashboard"), icon: <LayoutDashboard className="w-4 h-4" /> },
+      { href: "/teacher/groups", label: t(lang, "nav.myGroups"), icon: <Users className="w-4 h-4" /> },
       { href: "/teacher/tests", label: t(lang, "nav.tests"), icon: <ClipboardCheck className="w-4 h-4" /> },
       { href: "/teacher/results", label: t(lang, "nav.results"), icon: <FileSpreadsheet className="w-4 h-4" /> }
     );
