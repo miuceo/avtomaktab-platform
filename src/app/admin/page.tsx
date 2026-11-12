@@ -1,5 +1,8 @@
 import React from "react";
 import Link from "next/link";
+import os from "os";
+import { headers } from "next/headers";
+import ShareLinks from "@/components/ShareLinks";
 import { requireRole, getLang } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { db } from "@/db";
@@ -11,10 +14,13 @@ import {
   road_signs,
   videos,
   users,
+  groups,
+  tests,
 } from "@/db/schema";
 import {
   BookOpen,
   CheckCircle2,
+  ClipboardCheck,
   HelpCircle,
   Languages,
   ListChecks,
@@ -34,6 +40,8 @@ export default async function AdminDashboardPage() {
     allSigns,
     allVideos,
     allUsers,
+    allGroups,
+    allTests,
   ] = await Promise.all([
     db.select().from(questions),
     db.select().from(topics),
@@ -42,7 +50,22 @@ export default async function AdminDashboardPage() {
     db.select().from(road_signs),
     db.select().from(videos),
     db.select().from(users),
+    db.select().from(groups),
+    db.select().from(tests),
   ]);
+
+  // Addresses other computers on the centre's network can open (plus the one used right now).
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const port = host.includes(":") ? host.split(":").pop() : "";
+  const lanLinks = Object.entries(os.networkInterfaces())
+    // Skip virtual adapters (WSL, Hyper-V, VirtualBox, Docker): other computers cannot reach them.
+    .filter(([name]) => !/vethernet|wsl|virtual|vmware|docker|hyper-v|vbox/i.test(name))
+    .flatMap(([, list]) => list ?? [])
+    .filter((n) => n.family === "IPv4" && !n.internal)
+    .map((n) => `http://${n.address}${port ? ":" + port : ""}`);
+  const shareLinks = [...new Set(host.startsWith("localhost") || host.startsWith("127.") ? lanLinks : [`${proto}://${host}`, ...lanLinks])];
 
   const unreviewedCount =
     allQuestions.filter((x) => !x.ru_reviewed).length +
@@ -52,6 +75,20 @@ export default async function AdminDashboardPage() {
     allVideos.filter((x) => !x.ru_reviewed).length;
 
   const cards = [
+    {
+      href: "/admin/groups",
+      title: t(lang, "nav.groups"),
+      count: allGroups.length,
+      sub: "O'quv guruhlari",
+      icon: <Users className="w-6 h-6 text-indigo-700" />,
+    },
+    {
+      href: "/teacher/tests",
+      title: t(lang, "nav.tests"),
+      count: allTests.length,
+      sub: "Jonli va ochiq testlar",
+      icon: <ClipboardCheck className="w-6 h-6 text-emerald-700" />,
+    },
     {
       href: "/admin/questions",
       title: t(lang, "nav.adminQuestions"),
@@ -140,6 +177,18 @@ export default async function AdminDashboardPage() {
             O&apos;quvchi oynasi →
           </Link>
         </div>
+      </div>
+
+      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div>
+          <h2 className="font-bold">{t(lang, "admin.shareTitle")}</h2>
+          <p className="text-xs text-slate-500">{t(lang, "admin.shareHint")}</p>
+        </div>
+        {shareLinks.length > 0 ? (
+          <ShareLinks links={shareLinks} copyLabel={t(lang, "admin.shareCopy")} />
+        ) : (
+          <p className="text-sm text-amber-600">{t(lang, "admin.shareNone")}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,45 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import crypto from "crypto";
-import { getCurrentUser, hashPassword } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/db";
-import { users, groups, group_members } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { group_members } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+import { MAX_BULK_STUDENTS, parseNameList } from "@/lib/credentials";
+import {
+  canManageStudent,
+  createStudentsInGroup,
+  getManagedGroup,
+  resetStudentPassword,
+} from "@/lib/students";
 
-const CreateStudentSchema = z.object({
+const BulkCreateSchema = z.object({
   groupId: z.number().int().positive(),
-  fullName: z.string().min(2).max(120),
-  customLogin: z.string().optional(),
-  customPassword: z.string().optional(),
+  namesText: z.string().max(20000),
 });
 
 const ResetPasswordSchema = z.object({
   studentId: z.number().int().positive(),
-  newPassword: z.string().optional(),
 });
 
-const DeleteStudentSchema = z.object({
+const RemoveStudentSchema = z.object({
   studentId: z.number().int().positive(),
   groupId: z.number().int().positive(),
 });
 
-function slugifyName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 10) || "student";
-}
-
-function generateReadablePassword(): string {
-  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
-  let out = "";
-  const bytes = crypto.randomBytes(8);
-  for (let i = 0; i < 8; i++) {
-    out += chars[bytes[i] % chars.length];
-  }
-  return out;
-}
-
+/** Bulk-creates students from a pasted list of full names (one per line, max 100). */
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "teacher" && user.role !== "admin")) {
@@ -47,73 +34,43 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const parsed = CreateStudentSchema.safeParse(body);
+  const parsed = BulkCreateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "invalidInput" }, { status: 400 });
   }
 
-  const { groupId, fullName, customLogin, customPassword } = parsed.data;
-
-  // Verify group ownership
-  const groupRows = await db
-    .select()
-    .from(groups)
-    .where(
-      user.role === "admin"
-        ? eq(groups.id, groupId)
-        : and(eq(groups.id, groupId), eq(groups.teacher_id, user.id))
-    )
-    .limit(1);
-
-  if (groupRows.length === 0) {
-    return NextResponse.json({ error: "Guruh topilmadi" }, { status: 404 });
+  // Ownership check: a teacher can only add students to their own groups.
+  const group = await getManagedGroup(user, parsed.data.groupId);
+  if (!group) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let login = customLogin?.trim() || "";
-  if (!login) {
-    const base = slugifyName(fullName);
-    const suffix = Math.floor(100 + Math.random() * 900);
-    login = `${base}${suffix}`;
+  const names = parseNameList(parsed.data.namesText);
+  if (names.length === 0) {
+    return NextResponse.json({ error: "emptyList" }, { status: 400 });
+  }
+  if (names.length > MAX_BULK_STUDENTS) {
+    return NextResponse.json({ error: "tooMany", max: MAX_BULK_STUDENTS }, { status: 400 });
+  }
+  if (names.some((n) => n.length < 2 || n.length > 120)) {
+    return NextResponse.json({ error: "invalidName" }, { status: 400 });
   }
 
-  // Ensure login is unique
-  const existing = await db.select().from(users).where(eq(users.login, login)).limit(1);
-  if (existing.length > 0) {
-    login = `${login}${Math.floor(10 + Math.random() * 89)}`;
-  }
-
-  const plainPassword = customPassword?.trim() || generateReadablePassword();
-  const passwordHash = await hashPassword(plainPassword);
-
-  const inserted = await db
-    .insert(users)
-    .values({
-      login,
-      password_hash: passwordHash,
-      full_name: fullName.trim(),
-      role: "student",
-      created_at: Date.now(),
-    })
-    .returning();
-
-  const student = inserted[0];
-
-  await db.insert(group_members).values({
-    group_id: groupId,
-    student_id: student.id,
-  });
+  const students = await createStudentsInGroup(group.id, names);
 
   return NextResponse.json({
     ok: true,
-    student: {
-      id: student.id,
-      full_name: student.full_name,
-      login: student.login,
-      plainPassword,
-    },
+    groupName: group.name,
+    students: students.map((s) => ({
+      id: s.id,
+      full_name: s.full_name,
+      login: s.login,
+      password: s.password,
+    })),
   });
 }
 
+/** Resets one student's password to a new random one (returned once). */
 export async function PATCH(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "teacher" && user.role !== "admin")) {
@@ -123,51 +80,18 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const parsed = ResetPasswordSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "invalidInput" }, { status: 400 });
   }
 
-  if (user.role === "teacher") {
-    const ownedMembership = await db
-      .select({ studentId: group_members.student_id })
-      .from(group_members)
-      .innerJoin(groups, eq(group_members.group_id, groups.id))
-      .where(
-        and(
-          eq(group_members.student_id, parsed.data.studentId),
-          eq(groups.teacher_id, user.id)
-        )
-      )
-      .limit(1);
-
-    if (ownedMembership.length === 0) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!(await canManageStudent(user, parsed.data.studentId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const targetStudent = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(and(eq(users.id, parsed.data.studentId), eq(users.role, "student")))
-    .limit(1);
-
-  if (targetStudent.length === 0) {
-    return NextResponse.json({ error: "O'quvchi topilmadi" }, { status: 404 });
-  }
-
-  const plainPassword = parsed.data.newPassword?.trim() || generateReadablePassword();
-  const passwordHash = await hashPassword(plainPassword);
-
-  await db
-    .update(users)
-    .set({ password_hash: passwordHash })
-    .where(and(eq(users.id, parsed.data.studentId), eq(users.role, "student")));
-
-  return NextResponse.json({
-    ok: true,
-    plainPassword,
-  });
+  const plainPassword = await resetStudentPassword(parsed.data.studentId);
+  return NextResponse.json({ ok: true, plainPassword });
 }
 
+/** Removes a student from a group (the account itself stays). */
 export async function DELETE(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "teacher" && user.role !== "admin")) {
@@ -175,35 +99,21 @@ export async function DELETE(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const parsed = DeleteStudentSchema.safeParse(body);
+  const parsed = RemoveStudentSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "invalidInput" }, { status: 400 });
   }
 
-  if (user.role === "teacher") {
-    const ownedGroupMember = await db
-      .select({ groupId: groups.id })
-      .from(groups)
-      .innerJoin(group_members, eq(groups.id, group_members.group_id))
-      .where(
-        and(
-          eq(groups.id, parsed.data.groupId),
-          eq(groups.teacher_id, user.id),
-          eq(group_members.student_id, parsed.data.studentId)
-        )
-      )
-      .limit(1);
-
-    if (ownedGroupMember.length === 0) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const group = await getManagedGroup(user, parsed.data.groupId);
+  if (!group) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   await db
     .delete(group_members)
     .where(
       and(
-        eq(group_members.group_id, parsed.data.groupId),
+        eq(group_members.group_id, group.id),
         eq(group_members.student_id, parsed.data.studentId)
       )
     );

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import "./globals.css";
 import { getCurrentUser, getLang, THEME_COOKIE_NAME } from "@/lib/auth";
 import { getAppSettings } from "@/lib/settings";
+import { hasAdmin } from "@/lib/setup";
 import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
@@ -15,6 +17,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Clean install: until the first admin exists, every page except /setup goes to /setup.
+  const pathname = (await headers()).get("x-pathname") || "";
+  if (!pathname.startsWith("/setup") && !(await hasAdmin())) {
+    redirect("/setup");
+  }
+
   const [user, lang, settings, cookieStore] = await Promise.all([
     getCurrentUser(),
     getLang(),

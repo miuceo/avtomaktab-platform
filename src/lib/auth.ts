@@ -4,15 +4,16 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, lte } from "drizzle-orm";
 import type { Lang } from "./i18n";
+import { getSessionExpiry } from "./session-config";
 
 export const SESSION_COOKIE_NAME = "avtomaktab_session";
 export const ROLE_COOKIE_NAME = "avtomaktab_role";
 export const LANG_COOKIE_NAME = "avtomaktab_lang";
 export const THEME_COOKIE_NAME = "avtomaktab_theme";
 
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export { SESSION_DURATION_MS } from "./session-config";
 
 export type UserRole = "admin" | "teacher" | "student";
 
@@ -31,18 +32,30 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export async function createSession(userId: number, role: UserRole): Promise<string> {
+export async function createSessionRecord(
+  userId: number,
+  nowMs = Date.now()
+): Promise<{ token: string; expiresAt: number }> {
   const token = crypto.randomBytes(32).toString("hex");
-  const now = Date.now();
-  const expiresAt = now + SESSION_DURATION_MS;
+  const expiresAt = getSessionExpiry(nowMs);
+
+  // Housekeeping: drop sessions that are already expired.
+  await db.delete(sessions).where(lte(sessions.expires_at, nowMs));
 
   await db.insert(sessions).values({
     user_id: userId,
     token,
     expires_at: expiresAt,
-    created_at: now,
+    created_at: nowMs,
   });
 
+  return { token, expiresAt };
+}
+
+export async function createSession(userId: number, role: UserRole): Promise<string> {
+  const { token, expiresAt } = await createSessionRecord(userId);
+
+  // Cookies expire at exactly the same moment as the session (3 hours absolute).
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
@@ -70,12 +83,14 @@ export async function destroySession(): Promise<void> {
   cookieStore.delete(ROLE_COOKIE_NAME);
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  if (!token) return null;
-
-  const now = Date.now();
+/**
+ * Resolves a session token to a user. `expires_at` is fixed at login time and is
+ * never updated here, so activity does not extend the session.
+ */
+export async function findUserBySessionToken(
+  token: string,
+  nowMs = Date.now()
+): Promise<AuthUser | null> {
   const rows = await db
     .select({
       id: users.id,
@@ -86,7 +101,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.user_id, users.id))
-    .where(and(eq(sessions.token, token), gt(sessions.expires_at, now)))
+    .where(and(eq(sessions.token, token), gt(sessions.expires_at, nowMs)))
     .limit(1);
 
   if (rows.length === 0) return null;
@@ -97,6 +112,13 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     full_name: rows[0].full_name,
     role: rows[0].role,
   };
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  if (!token) return null;
+  return findUserBySessionToken(token);
 }
 
 export async function requireRole(allowedRoles: UserRole[]): Promise<AuthUser> {

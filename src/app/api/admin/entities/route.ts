@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
 import { setAppSetting } from "@/lib/settings";
 import { chunkQuestionsIntoTickets } from "@/lib/exam-logic";
+import { QuestionSchema } from "@/lib/question-schema";
 import { db } from "@/db";
 import {
   topics,
@@ -15,7 +16,15 @@ import {
   videos,
   users,
 } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, sql } from "drizzle-orm";
+
+async function countAdmins(): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(*)` })
+    .from(users)
+    .where(eq(users.role, "admin"));
+  return Number(rows[0]?.n ?? 0);
+}
 
 const TopicSchema = z.object({
   id: z.number().int().positive().optional(),
@@ -23,30 +32,6 @@ const TopicSchema = z.object({
   name_ru: z.string().optional().default(""),
   ru_reviewed: z.boolean().optional().default(false),
 });
-
-const AnswerItemSchema = z.object({
-  id: z.number().int().positive().optional(),
-  text_uz: z.string().min(1),
-  text_ru: z.string().optional().default(""),
-  is_correct: z.boolean(),
-});
-
-const QuestionSchema = z
-  .object({
-    id: z.number().int().positive().optional(),
-    topic_id: z.number().int().positive(),
-    text_uz: z.string().min(1),
-    text_ru: z.string().optional().default(""),
-    image_path: z.string().nullable().optional().default(null),
-    explanation_uz: z.string().optional().default(""),
-    explanation_ru: z.string().optional().default(""),
-    ru_reviewed: z.boolean().optional().default(false),
-    status: z.enum(["draft", "published"]).default("published"),
-    answers: z.array(AnswerItemSchema).min(2).max(5),
-  })
-  .refine((q) => q.answers.filter((a) => a.is_correct).length === 1, {
-    message: "Aynan 1 ta to'g'ri javob bo'lishi shart (2–5 javob ichida)",
-  });
 
 const TicketManualSchema = z.object({
   id: z.number().int().positive().optional(),
@@ -97,7 +82,7 @@ const UserSchema = z.object({
 
 const SettingsSchema = z.object({
   center_name: z.string().min(1).max(120),
-  logo_path: z.string().optional().default("/seed/logo.svg"),
+  logo_path: z.string().optional().default(""),
   exam_question_count: z.number().int().min(1).max(100),
   exam_minutes: z.number().int().min(1).max(180),
   exam_max_wrong: z.number().int().min(0).max(50),
@@ -363,18 +348,28 @@ export async function POST(req: NextRequest) {
     if (entity === "user") {
       const data = UserSchema.parse(payload);
       if (data.id) {
+        if (data.role !== "admin") {
+          // The last admin can never be demoted (would re-open /setup).
+          const existing = await db.select().from(users).where(eq(users.id, data.id)).limit(1);
+          if (existing[0]?.role === "admin" && (await countAdmins()) <= 1) {
+            return NextResponse.json({ error: "Oxirgi administratorni o'zgartirib bo'lmaydi" }, { status: 400 });
+          }
+        }
         const updateFields: Record<string, unknown> = {
           login: data.login.trim(),
           full_name: data.full_name.trim(),
           role: data.role,
         };
         if (data.password && data.password.trim().length > 0) {
+          if (data.password.trim().length < 8) {
+            return NextResponse.json({ error: "Parol kamida 8 belgidan iborat bo'lsin" }, { status: 400 });
+          }
           updateFields.password_hash = await hashPassword(data.password.trim());
         }
         await db.update(users).set(updateFields).where(eq(users.id, data.id));
       } else {
-        if (!data.password || data.password.trim().length < 3) {
-          return NextResponse.json({ error: "Parol kamida 3 belgidan iborat bo'lsin" }, { status: 400 });
+        if (!data.password || data.password.trim().length < 8) {
+          return NextResponse.json({ error: "Parol kamida 8 belgidan iborat bo'lsin" }, { status: 400 });
         }
         const passwordHash = await hashPassword(data.password.trim());
         await db.insert(users).values({
@@ -485,6 +480,10 @@ export async function DELETE(req: NextRequest) {
     if (entity === "user") {
       if (id === user.id) {
         return NextResponse.json({ error: "O'z hisobingizni o'chira olmaysiz" }, { status: 400 });
+      }
+      const target = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      if (target[0]?.role === "admin" && (await countAdmins()) <= 1) {
+        return NextResponse.json({ error: "Oxirgi administratorni o'chirib bo'lmaydi" }, { status: 400 });
       }
       await db.delete(users).where(eq(users.id, id));
     }

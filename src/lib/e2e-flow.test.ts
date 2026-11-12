@@ -56,6 +56,119 @@ async function setSessionForUser(userId: number) {
 describe("End-to-End Platform Flow & Security Review Fixes", () => {
   beforeAll(async () => {
     await runMigrations();
+
+    // Ensure test fixtures exist
+    let [adminUser] = await db.select().from(users).where(eq(users.login, "admin")).limit(1);
+    if (!adminUser) {
+      [adminUser] = await db
+        .insert(users)
+        .values({
+          login: "admin",
+          password_hash: await hashPassword("admin123"),
+          full_name: "Admin Administrator",
+          role: "admin",
+          created_at: Date.now(),
+        })
+        .returning();
+    }
+
+    let [teacherUser] = await db.select().from(users).where(eq(users.login, "teacher")).limit(1);
+    if (!teacherUser) {
+      [teacherUser] = await db
+        .insert(users)
+        .values({
+          login: "teacher",
+          password_hash: await hashPassword("teacher123"),
+          full_name: "O'qituvchi Test",
+          role: "teacher",
+          created_at: Date.now(),
+        })
+        .returning();
+    }
+
+    let [teacherGroup] = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.teacher_id, teacherUser.id))
+      .limit(1);
+    if (!teacherGroup) {
+      [teacherGroup] = await db
+        .insert(groups)
+        .values({
+          name: "Test Guruhi",
+          teacher_id: teacherUser.id,
+          created_at: Date.now(),
+        })
+        .returning();
+    }
+
+    let [student1] = await db.select().from(users).where(eq(users.login, "student1")).limit(1);
+    if (!student1) {
+      [student1] = await db
+        .insert(users)
+        .values({
+          login: "student1",
+          password_hash: await hashPassword("student123"),
+          full_name: "Student One",
+          role: "student",
+          created_at: Date.now(),
+        })
+        .returning();
+      await db.insert(group_members).values({
+        group_id: teacherGroup.id,
+        student_id: student1.id,
+      });
+    }
+
+    let [student2] = await db.select().from(users).where(eq(users.login, "student2")).limit(1);
+    if (!student2) {
+      [student2] = await db
+        .insert(users)
+        .values({
+          login: "student2",
+          password_hash: await hashPassword("student123"),
+          full_name: "Student Two",
+          role: "student",
+          created_at: Date.now(),
+        })
+        .returning();
+      await db.insert(group_members).values({
+        group_id: teacherGroup.id,
+        student_id: student2.id,
+      });
+    }
+
+    let [testTopic] = await db.select().from(topics).limit(1);
+    if (!testTopic) {
+      [testTopic] = await db
+        .insert(topics)
+        .values({
+          name_uz: "Test Mavzusi",
+          name_ru: "Тестовая тема",
+          sort: 1,
+        })
+        .returning();
+    }
+
+    const existingQCount = (await db.select().from(questions)).length;
+    if (existingQCount < 40) {
+      for (let i = existingQCount + 1; i <= 45; i++) {
+        const [q] = await db
+          .insert(questions)
+          .values({
+            topic_id: testTopic.id,
+            text_uz: `Savol #${i}`,
+            text_ru: `Вопрос #${i}`,
+            status: "published",
+          })
+          .returning();
+        await db.insert(answers).values([
+          { question_id: q.id, text_uz: `To'g'ri #${i}`, text_ru: `Прав #${i}`, is_correct: true, sort: 1 },
+          { question_id: q.id, text_uz: `Xato 1 #${i}`, text_ru: `Неправ 1 #${i}`, is_correct: false, sort: 2 },
+          { question_id: q.id, text_uz: `Xato 2 #${i}`, text_ru: `Неправ 2 #${i}`, is_correct: false, sort: 3 },
+        ]);
+      }
+    }
   });
 
   it("verifies seeded accounts, teacher student creation, student exam flow, and weak topics calculation", async () => {

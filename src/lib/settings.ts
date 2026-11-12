@@ -12,7 +12,7 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   center_name: "Avtomaktab",
-  logo_path: "/seed/logo.svg",
+  logo_path: "",
   exam_question_count: 20,
   exam_minutes: 25,
   exam_max_wrong: 2,

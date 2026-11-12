@@ -1,4 +1,4 @@
-# Savollarni JSON formatda yuklash (`import:questions`)
+﻿# Savollarni JSON formatda yuklash (`import:questions`)
 
 Avtomaktab platformasiga savollarni CLI skript orqali yoki Admin paneldagi JSON yuklash oynasi orqali kiritish mumkin.
 
@@ -23,7 +23,7 @@ Fayl savollar massividan (`[...]`) yoki `{ "questions": [...] }` obyektidan ibor
 - `topic_name_ru` *(ixtiyoriy, string)* — Mavzuning rus tilidagi nomi.
 - `text_uz` *(majburiy, string)* — Savolning o'zbek (lotin) tilidagi matni.
 - `text_ru` *(ixtiyoriy, string)* — Savolning rus tilidagi matni (bo'sh bo'lsa `text_uz` ko'rsatiladi).
-- `image_path` *(ixtiyoriy, string | null)* — Rasm manzili (masalan, `"/uploads/rasm.png"` yoki `"/seed/signs/2.1.svg"`).
+- `image_path` *(ixtiyoriy, string | null)* — Rasm manzili (masalan, `"/uploads/rasm.png"`).
 - `explanation_uz` *(ixtiyoriy, string)* — To'g'ri javob izohi (O'zbek tilida).
 - `explanation_ru` *(ixtiyoriy, string)* — To'g'ri javob izohi (Rus tilida).
 - `ru_reviewed` *(ixtiyoriy, boolean, default: `false`)* — Ruscha tarjima tekshirilganligi.

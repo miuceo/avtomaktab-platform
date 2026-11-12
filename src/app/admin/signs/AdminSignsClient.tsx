@@ -35,7 +35,7 @@ export function AdminSignsClient({
   const [nameRu, setNameRu] = useState("");
   const [descUz, setDescUz] = useState("");
   const [descRu, setDescRu] = useState("");
-  const [imagePath, setImagePath] = useState("/seed/signs/1.1.svg");
+  const [imagePath, setImagePath] = useState("");
   const [ruReviewed, setRuReviewed] = useState(true);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -99,7 +99,7 @@ export function AdminSignsClient({
             setNameRu("");
             setDescUz("");
             setDescRu("");
-            setImagePath("/seed/signs/2.1.svg");
+            setImagePath("");
             setShowForm(true);
           }}
           className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-800 text-white text-sm font-bold"

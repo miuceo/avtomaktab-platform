@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
-    "start": "next start -H 0.0.0.0",
+    "start": "npm run setup && next start -H 0.0.0.0",
     "lint": "next lint",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:seed": "tsx src/db/seed.ts",
+    "setup": "tsx src/db/migrate.ts",
     "import:questions": "tsx src/scripts/import-questions.ts",
     "test": "vitest run"
   },

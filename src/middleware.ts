@@ -7,10 +7,9 @@ const ROLE_COOKIE_NAME = "avtomaktab_role";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow static assets, public seed/upload files, and API routes that do their own server-side auth
+  // Static assets and uploaded files are always served.
   if (
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/seed") ||
     pathname.startsWith("/uploads") ||
     pathname.startsWith("/favicon")
   ) {
@@ -24,15 +23,7 @@ export function middleware(request: NextRequest) {
     | "student"
     | undefined;
 
-  if (pathname === "/login") {
-    if (sessionToken && role) {
-      const target = role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/student";
-      return NextResponse.redirect(new URL(target, request.url));
-    }
-    return NextResponse.next();
-  }
-
-  // Protected route groups
+  // Protected route groups (coarse check; every page and API re-checks on the server).
   if (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/teacher") ||
@@ -57,7 +48,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // The root layout needs the pathname to enforce the "no admin yet -> /setup"
+  // redirect (the database cannot be queried from the edge middleware).
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

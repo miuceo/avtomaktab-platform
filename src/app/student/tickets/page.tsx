@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { requireRole, getLang } from "@/lib/auth";
-import { getActiveExamAttempt } from "@/lib/active-exam";
+import { getActiveBlock } from "@/lib/active-exam";
 import { ActiveExamNotice } from "@/components/ActiveExamNotice";
 import { t } from "@/lib/i18n";
 import { db } from "@/db";
@@ -15,9 +15,9 @@ export default async function StudentTicketsPage() {
     getLang(),
   ]);
 
-  const activeExam = await getActiveExamAttempt(user.id);
+  const activeExam = await getActiveBlock(user.id);
   if (activeExam) {
-    return <ActiveExamNotice lang={lang} />;
+    return <ActiveExamNotice lang={lang} block={activeExam} />;
   }
 
   const [allTickets, allTicketQuestions, userTicketAttempts] = await Promise.all([

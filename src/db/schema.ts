@@ -37,6 +37,7 @@ export const group_members = sqliteTable(
     student_id: integer("student_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    joined_at: integer("joined_at").notNull().default(0), // unix ms
   },
   (table) => ({
     pk: primaryKey({ columns: [table.group_id, table.student_id] }),
@@ -172,3 +173,102 @@ export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Tests (separate from tickets / practice / GAI exam simulator)
+// ---------------------------------------------------------------------------
+
+export const tests = sqliteTable("tests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  duration_minutes: integer("duration_minutes").notNull(),
+  created_by: integer("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  created_at: integer("created_at").notNull(),
+});
+
+export const test_questions = sqliteTable(
+  "test_questions",
+  {
+    test_id: integer("test_id")
+      .notNull()
+      .references(() => tests.id, { onDelete: "cascade" }),
+    question_id: integer("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    sort: integer("sort").notNull().default(1),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.test_id, table.question_id] }),
+  })
+);
+
+export const test_assignments = sqliteTable("test_assignments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  test_id: integer("test_id")
+    .notNull()
+    .references(() => tests.id, { onDelete: "cascade" }),
+  group_id: integer("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: ["live", "open"] }).notNull(),
+  started_at: integer("started_at"), // live only
+  ends_at: integer("ends_at"), // live only
+  closed_at: integer("closed_at"), // open only: set when the teacher closes it
+  created_by: integer("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  created_at: integer("created_at").notNull(),
+});
+
+export const test_attempts = sqliteTable(
+  "test_attempts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    assignment_id: integer("assignment_id")
+      .notNull()
+      .references(() => test_assignments.id, { onDelete: "cascade" }),
+    student_id: integer("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    attempt_no: integer("attempt_no").notNull().default(1),
+    question_order_json: text("question_order_json").notNull().default("[]"),
+    answer_order_json: text("answer_order_json").notNull().default("{}"),
+    started_at: integer("started_at").notNull(),
+    deadline_at: integer("deadline_at").notNull(),
+    finished_at: integer("finished_at"),
+    correct: integer("correct").notNull().default(0),
+    total: integer("total").notNull().default(0),
+  },
+  (table) => ({
+    attemptNoUnique: uniqueIndex("test_attempts_assignment_student_no_unique").on(
+      table.assignment_id,
+      table.student_id,
+      table.attempt_no
+    ),
+  })
+);
+
+export const test_attempt_answers = sqliteTable(
+  "test_attempt_answers",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    attempt_id: integer("attempt_id")
+      .notNull()
+      .references(() => test_attempts.id, { onDelete: "cascade" }),
+    question_id: integer("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    answer_id: integer("answer_id")
+      .notNull()
+      .references(() => answers.id, { onDelete: "cascade" }),
+    is_correct: integer("is_correct", { mode: "boolean" }).notNull(),
+  },
+  (table) => ({
+    attemptQuestionUnique: uniqueIndex("test_attempt_answers_attempt_question_unique").on(
+      table.attempt_id,
+      table.question_id
+    ),
+  })
+);

@@ -19,27 +19,23 @@ Loyiha papkasiga kirib quyidagi buyruqlarni ketma-ket bajaring:
 
 ```powershell
 # 1. Paketlarni o'rnatish
-npm ci
+npm install
 
-# 2. SQLite ma'lumotlar bazasi jadvallarini yaratish (./data/app.db)
-npm run db:migrate
+# 2. SQLite ma'lumotlar bazasini sozlash (idempotent migratsiya: ./data/app.db)
+npm run setup
 
-# 3. Boshlang'ich ma'lumotlarni yuklash (Admin, o'qituvchi, 2 o'quvchi, 8 mavzu, 40 savol, 2 bilet, 5 bob, 30 yo'l belgisi, 3 video)
-npm run db:seed
-
-# 4. Production uchun loyihani yig'ish
+# 3. Production uchun loyihani yig'ish
 npm run build
 
-# 5. Serverni ishga tushirish (0.0.0.0:3000 orqali barcha LAN kompyuterlar uchun ochiq bo'ladi)
+# 4. Serverni ishga tushirish (0.0.0.0:3000 orqali barcha LAN kompyuterlar uchun ochiq bo'ladi)
 npm start
 ```
 
-> **Diqqat:** Standart holatda administrator paroli `admin123` bo'ladi. Xavfsizlik uchun `.env` faylida `ADMIN_PASSWORD=SeningKuchliParoling` qiymatini berib `npm run db:seed` buyrug'ini ishga tushiring yoki Admin paneldan parolni almashtiring.
-
-### 1.3. Boshlang'ich login va parollar (Seed ma'lumotlari)
-- **Administrator:** login `admin`, parol `admin123`
-- **O'qituvchi:** login `teacher`, parol `teacher123`
-- **O'quvchilar:** login `student1` va `student2`, parol `student123`
+### 1.3. Boshlang'ich administratorni yaratish (/setup)
+1. Server yoki o'quv xonasi kompyuterida brauzerni oching: `http://<server-LAN-IP>:3000` (yoki mahalliy serverda `http://localhost:3000`).
+2. Tizimda hali administrator bo'lmagani sababli u avtomatik ravishda `/setup` sahifasiga yo'naltiradi.
+3. Administratorning to'liq ismi, login va paroli (kamida 8 belgi) kiritiladi.
+4. Birinchi administrator yaratilgach, `/setup` sahifasi xavfsizlik maqsadida butunlay yopiladi va `/login` ga yo'naltiriladi.
 
 ---
 
@@ -105,17 +101,14 @@ Format tavsifi `docs/import-format.md` faylida keltirilgan.
 Aynan shu kod bazasi hech qanday o'zgarishsiz **Vercel** va **Turso (LibSQL)** bulutida ham ishlaydi:
 
 1. **Turso** (`https://turso.tech`) da yangi ma'lumotlar bazasi yarating va `DATABASE_URL` (`libsql://...`) hamda `DATABASE_AUTH_TOKEN` qiymatlarini oling.
-2. Lokal kompyuterda ushbu `.env` o'zgaruvchilar bilan migratsiya va seedni bajaring:
+2. Lokal kompyuterda ushbu `.env` o'zgaruvchilar bilan migratsiyani bajaring:
    ```powershell
    $env:DATABASE_URL="libsql://your-db.turso.io"
    $env:DATABASE_AUTH_TOKEN="your-turso-token"
-   $env:ADMIN_PASSWORD="strong-admin-password"
-   npm run db:migrate
-   npm run db:seed
+   npm run setup
    ```
 3. Loyihani GitHub'ga yuklang va **Vercel** ga ulang.
 4. Vercel Environment Variables bo'limiga quyidagilarni kiriting:
    - `DATABASE_URL` = `libsql://your-db.turso.io`
    - `DATABASE_AUTH_TOKEN` = `your-turso-token`
-   - `ADMIN_PASSWORD` = `strong-admin-password`
 5. Rasmlarni bulutda saqlash kerak bo'lsa, faqatgina `src/lib/storage.ts` modulidagi `saveUploadedFile` funksiyasini `@vercel/blob` ga almashtirish kifoya.

@@ -4,7 +4,7 @@ import { saveUploadedFile } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== "admin" && user.role !== "teacher")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

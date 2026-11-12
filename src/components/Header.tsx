@@ -8,6 +8,7 @@ import type { UserRole } from "@/lib/auth";
 import {
   BookOpen,
   CheckCircle2,
+  ClipboardCheck,
   FileSpreadsheet,
   GraduationCap,
   LayoutDashboard,
@@ -100,6 +101,7 @@ export function Header({ user, lang, initialTheme, centerName, logoPath }: Heade
   if (user?.role === "student") {
     navItems.push(
       { href: "/student", label: t(lang, "nav.dashboard"), icon: <LayoutDashboard className="w-4 h-4" /> },
+      { href: "/student/tests", label: t(lang, "nav.tests"), icon: <ClipboardCheck className="w-4 h-4" /> },
       { href: "/student/tickets", label: t(lang, "nav.tickets"), icon: <ListChecks className="w-4 h-4" /> },
       { href: "/student/topics", label: t(lang, "nav.topics"), icon: <BookOpen className="w-4 h-4" /> },
       { href: "/student/exam", label: t(lang, "nav.exam"), icon: <GraduationCap className="w-4 h-4" /> },
@@ -110,11 +112,14 @@ export function Header({ user, lang, initialTheme, centerName, logoPath }: Heade
   } else if (user?.role === "teacher") {
     navItems.push(
       { href: "/teacher", label: t(lang, "nav.groups"), icon: <Users className="w-4 h-4" /> },
+      { href: "/teacher/tests", label: t(lang, "nav.tests"), icon: <ClipboardCheck className="w-4 h-4" /> },
       { href: "/teacher/results", label: t(lang, "nav.results"), icon: <FileSpreadsheet className="w-4 h-4" /> }
     );
   } else if (user?.role === "admin") {
     navItems.push(
       { href: "/admin", label: t(lang, "nav.dashboard"), icon: <LayoutDashboard className="w-4 h-4" /> },
+      { href: "/admin/groups", label: t(lang, "nav.groups"), icon: <Users className="w-4 h-4" /> },
+      { href: "/teacher/tests", label: t(lang, "nav.tests"), icon: <ClipboardCheck className="w-4 h-4" /> },
       { href: "/admin/questions", label: t(lang, "nav.adminQuestions"), icon: <HelpCircle className="w-4 h-4" /> },
       { href: "/admin/topics", label: t(lang, "nav.adminTopics"), icon: <BookOpen className="w-4 h-4" /> },
       { href: "/admin/tickets", label: t(lang, "nav.adminTickets"), icon: <ListChecks className="w-4 h-4" /> },

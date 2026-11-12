@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser, getLang } from "@/lib/auth";
 import { getAppSettings } from "@/lib/settings";
-import { getActiveExamAttempt } from "@/lib/active-exam";
+import { getActiveBlock } from "@/lib/active-exam";
 import { t } from "@/lib/i18n";
 import { db } from "@/db";
 import { exam_attempts, attempt_answers, answers, questions } from "@/db/schema";
@@ -25,11 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const activeExam = await getActiveExamAttempt(user.id);
-  if (activeExam) {
+  const activeBlock = await getActiveBlock(user.id);
+  if (activeBlock) {
     const lang = await getLang();
+    const key = activeBlock.kind === "test" ? "student.testInProgress" : "student.examInProgress";
+    const descKey =
+      activeBlock.kind === "test" ? "student.testInProgressDesc" : "student.examInProgressDesc";
     return NextResponse.json(
-      { error: `${t(lang, "student.examInProgress")}: ${t(lang, "student.examInProgressDesc")}` },
+      { error: `${t(lang, key)}: ${t(lang, descKey)}` },
       { status: 423 }
     );
   }

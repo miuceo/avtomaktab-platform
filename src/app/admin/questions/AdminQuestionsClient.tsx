@@ -342,7 +342,7 @@ export function AdminQuestionsClient({
                 type="text"
                 value={imagePath}
                 onChange={(e) => setImagePath(e.target.value)}
-                placeholder="/uploads/... yoki /seed/signs/2.1.svg"
+                placeholder="/uploads/..."
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"
               />
             </div>

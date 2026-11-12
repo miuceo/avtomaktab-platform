@@ -118,10 +118,67 @@ export async function runMigrations() {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );`,
+    `CREATE TABLE IF NOT EXISTS tests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at INTEGER NOT NULL
+    );`,
+    `CREATE TABLE IF NOT EXISTS test_questions (
+      test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+      question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+      sort INTEGER NOT NULL DEFAULT 1,
+      PRIMARY KEY (test_id, question_id)
+    );`,
+    `CREATE TABLE IF NOT EXISTS test_assignments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+      group_id INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,
+      started_at INTEGER,
+      ends_at INTEGER,
+      closed_at INTEGER,
+      created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at INTEGER NOT NULL
+    );`,
+    `CREATE TABLE IF NOT EXISTS test_attempts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      assignment_id INTEGER NOT NULL REFERENCES test_assignments(id) ON DELETE CASCADE,
+      student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      attempt_no INTEGER NOT NULL DEFAULT 1,
+      question_order_json TEXT NOT NULL DEFAULT '[]',
+      answer_order_json TEXT NOT NULL DEFAULT '{}',
+      started_at INTEGER NOT NULL,
+      deadline_at INTEGER NOT NULL,
+      finished_at INTEGER,
+      correct INTEGER NOT NULL DEFAULT 0,
+      total INTEGER NOT NULL DEFAULT 0
+    );`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS test_attempts_assignment_student_no_unique ON test_attempts(assignment_id, student_id, attempt_no);`,
+    `CREATE TABLE IF NOT EXISTS test_attempt_answers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      attempt_id INTEGER NOT NULL REFERENCES test_attempts(id) ON DELETE CASCADE,
+      question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+      answer_id INTEGER NOT NULL REFERENCES answers(id) ON DELETE CASCADE,
+      is_correct INTEGER NOT NULL
+    );`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS test_attempt_answers_attempt_question_unique ON test_attempt_answers(attempt_id, question_id);`,
   ];
 
   for (const sql of statements) {
     await client.execute(sql);
+  }
+
+  // Idempotent column additions for databases created by an older version.
+  await addColumnIfMissing("group_members", "joined_at", "INTEGER NOT NULL DEFAULT 0");
+}
+
+async function addColumnIfMissing(table: string, column: string, definition: string) {
+  const info = await client.execute(`PRAGMA table_info(${table})`);
+  const exists = info.rows.some((row) => String(row.name) === column);
+  if (!exists) {
+    await client.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
 }
 
