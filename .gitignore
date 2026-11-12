@@ -42,3 +42,6 @@ next-env.d.ts
 !/public/uploads/.gitkeep
 
 agy-*.log
+
+# database backups
+/zaxira/

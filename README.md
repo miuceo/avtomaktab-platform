@@ -2,6 +2,8 @@
 
 Ushbu tizim avtomaktab o'quv markazi uchun mo'ljallangan bo'lib, **internetsiz mahalliy tarmoqda (LAN)** 10+ kompyuterda ishlashga hamda bulutli serverga (**Vercel + Turso**) joylashtirishga moslashtirilgan.
 
+> **Dasturchi emasmisiz?** Boshlovchilar uchun qadamma-qadam yo'riqnoma: [YORIQNOMA.md](YORIQNOMA.md). Kundalik ish uchun papkadagi `1-ishga-tushirish.bat`, `zaxira-nusxa.bat` va `yangilash.bat` fayllarini ikki marta bosish kifoya.
+
 ---
 
 ## 1. Windows serverga o'rnatish (O'quv markazi LAN tarmog'i uchun)
